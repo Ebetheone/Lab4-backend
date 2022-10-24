@@ -72,9 +72,20 @@ router.post("/register", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
 
+  if (!process.env.ACCESS_TOKEN_SECRET) {
+    return res.status(200).send({ success: false, result: "Алдаа гарлаа" });
+  }
+
+  const accessToken = await jwt.sign(
+    { username },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: "15m",
+    }
+  );
   await user.save();
   res.status(200).send({
-    result: user,
+    result: accessToken,
     success: true,
   });
 });
